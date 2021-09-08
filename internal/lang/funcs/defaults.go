@@ -102,25 +102,25 @@ func defaultsApply(input, fallback cty.Value) cty.Value {
 		return v.WithMarks(fallbackMarks)
 
 	case wantTy.IsObjectType():
-		// For structural types, a null input value must be passed through. We
-		// do not apply default values for missing optional structural values,
-		// only their contents.
-		//
-		// We also pass through the input if the fallback value is null. This
+		// We pass through the input if the fallback value is null. This
 		// can happen if the given defaults do not include a value for this
 		// attribute.
-		if umInput.IsNull() || umFb.IsNull() {
+		if umFb.IsNull() {
 			return input
 		}
 		atys := wantTy.AttributeTypes()
 		ret := map[string]cty.Value{}
 		for attr, aty := range atys {
-			inputSub := umInput.GetAttr(attr)
-			fallbackSub := cty.NullVal(aty)
-			if umFb.Type().HasAttribute(attr) {
-				fallbackSub = umFb.GetAttr(attr)
+			if umInput.IsNull() {
+				ret[attr] = umFb.GetAttr(attr).WithMarks(fallbackMarks)
+			} else {
+				inputSub := umInput.GetAttr(attr)
+				fallbackSub := cty.NullVal(aty)
+				if umFb.Type().HasAttribute(attr) {
+					fallbackSub = umFb.GetAttr(attr)
+				}
+				ret[attr] = defaultsApply(inputSub.WithMarks(inputMarks), fallbackSub.WithMarks(fallbackMarks))
 			}
-			ret[attr] = defaultsApply(inputSub.WithMarks(inputMarks), fallbackSub.WithMarks(fallbackMarks))
 		}
 		return cty.ObjectVal(ret)
 

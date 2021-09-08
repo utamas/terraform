@@ -415,10 +415,10 @@ func TestDefaults(t *testing.T) {
 				}),
 			}),
 			Want: cty.ObjectVal(map[string]cty.Value{
-				"a": cty.NullVal(cty.Object(map[string]cty.Type{
-					"x": cty.String,
-					"y": cty.String,
-				})),
+				"a": cty.ObjectVal(map[string]cty.Value{
+					"x": cty.StringVal("hello"),
+					"y": cty.StringVal("there"),
+				}),
 				"b": cty.NullVal(cty.Tuple([]cty.Type{cty.String, cty.String})),
 			}),
 		},
